@@ -1,0 +1,54 @@
+spider
+    uso básico sin recursividad
+        /usr/bin/python3 spider.py https://ejemplo.com
+    Con recursividad (flags opcionales)
+        /usr/bin/python3 spider.py -r -l 3 -p ./mis_imagenes https://ejemplo.com
+    Por ejemplo, para descargar imágenes de una web con recursividad hasta profundidad 2
+        /usr/bin/python3 spider.py -r -l 2 -p ./descargas https://ejemplo.com   
+    otros a data (sencilla)
+        /usr/bin/python3 spider.py -r -l 1 https://books.toscrape.com
+    otros a otra carpeta    
+        /usr/bin/python3 spider.py -r -l 1 -p ./myfolder https://books.toscrape.com
+
+    breve
+        /usr/bin/python3 spider.py https://books.toscrape.com/catalogue/category/books/science_22/index.html
+        /usr/bin/python3 spider.py -r -l 1 https://books.toscrape.com/catalogue/category/books/science_22/index.html
+
+    para la defensa
+
+        1. Caso básico (sin recursividad, path por defecto ./data)
+            /usr/bin/python3 spider.py https://books.toscrape.com/catalogue/category/books/science_22/index.html
+        2. Caso recursivo con límite de profundidad
+            /usr/bin/python3 spider.py -r -l 1 https://books.toscrape.com/catalogue/category/books/science_22/index.html
+        3. Caso con path personalizado
+            /usr/bin/python3 spider.py -p ./my_test_data https://books.toscrape.com/catalogue/category/books/science_22/index.html
+
+        Ejecutas el 1.
+            ls data | wc -l
+        Ejecutas el 2.
+            ls data | wc -l
+        Ejecutas el 3.
+            ls my_test_data | wc -l
+
+=================================================
+scorpion
+    Archivo único:
+        /usr/bin/python3 scorpion.py /ruta/a/imagen.jpg
+    Varios archivos:
+        /usr/bin/python3 scorpion.py img1.jpg img2.png img3.bmp
+
+    Comandos demo
+        Caso normal (1 archivo válido)
+            /usr/bin/python3 /Users/robi/Desktop/Bootcamp_Ciber_42/scorpion.py /Users/robi/Desktop/Bootcamp_Ciber_42/Arachnida/data_test/cover.jpg
+        Caso múltiple (varios archivos válidos en una llamada)
+            /usr/bin/python3 /Users/robi/Desktop/Bootcamp_Ciber_42/scorpion.py /Users/robi/Desktop/Bootcamp_Ciber_42/Arachnida/data_test/*.jpg
+        Caso error controlado (archivo no soportado o inexistente)
+            /usr/bin/python3 /Users/robi/Desktop/Bootcamp_Ciber_42/scorpion.py /Users/robi/Desktop/Bootcamp_Ciber_42/README.md /Users/robi/Desktop/Bootcamp_Ciber_42/no_existe.jpg
+        Tip rápido para que te funcionen tal cual:
+
+            1.Si no tienes cover.jpg, cambia ese nombre por uno real de tu carpeta data o data_test.
+            2. Puedes ver nombres reales con:
+
+            ls /Users/robi/Desktop/Bootcamp_Ciber_42/Arachnida/data_test | head
+
+            python3 scorpion.py demo_images/python_logo.png demo_images/landscape.jpg
