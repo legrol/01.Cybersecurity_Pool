@@ -1,0 +1,151 @@
+# Guía rápida de evaluación (42, sin sudo)
+
+Si `docker ps` devuelve permiso denegado, el evaluador debe habilitar tu acceso al daemon Docker (sin sudo).
+
+## Rutas del proyecto
+
+- Script principal: `../inquisitor.py`
+- Compose: `../env/docker-compose.yml`
+- Makefile: `../Makefile`
+
+## Redirecciones usadas (host:contenedor)
+
+- FTP: `12121:21`
+- User SSH: `14141:4141`
+- Poison SSH: `2222:4242`
+
+## Terminales
+
+- `T1`: ataque/sniffer
+- `T2`: cliente FTP y comprobaciones
+
+## Paso 1: levantar entorno (`T1`)
+
+```bash
+# T1
+make down && make up && make ps
+docker ps --format 'table {{.Names}}\t{{.Status}}\t{{.Ports}}'
+```
+
+Si cambiaste código y quieres reconstruir imágenes:
+
+```bash
+make down
+docker compose -f env/docker-compose.yml up -d --build
+make ps
+```
+
+## Paso 2: sacar IP/MAC reales (`T1`)
+
+```bash
+# T1
+SRC="$(docker inspect -f '{{range .NetworkSettings.Networks}}{{.IPAddress}} {{.MacAddress}}{{end}}' ftp_server)"
+SRC_IP="$(echo "$SRC" | awk '{print $1}')"
+SRC_MAC="$(echo "$SRC" | awk '{print $2}')"
+
+echo "SRC_IP=$SRC_IP SRC_MAC=$SRC_MAC"
+
+TGT="$(docker inspect -f '{{range .NetworkSettings.Networks}}{{.IPAddress}} {{.MacAddress}}{{end}}' user)"
+TGT_IP="$(echo "$TGT" | awk '{print $1}')"
+TGT_MAC="$(echo "$TGT" | awk '{print $2}')"
+
+echo "TGT_IP=$TGT_IP TGT_MAC=$TGT_MAC"
+
+ATK="$(docker inspect -f '{{range .NetworkSettings.Networks}}{{.MacAddress}}{{end}}' poison)"
+
+echo "ATK_MAC=$ATK"
+```
+
+## Paso 3: validar script en atacante (`T1`)
+
+```bash
+# T1
+docker exec poison python3 -m py_compile /usr/src/inquisitor.py
+```
+
+## Paso 4: lanzar Inquisitor (`T1`, dejar corriendo)
+
+```bash
+# T1
+docker exec -it poison python3 -u /usr/src/inquisitor.py "$SRC_IP" "$SRC_MAC" "$TGT_IP" "$TGT_MAC" -i eth0 -v
+```
+
+Esperado:
+- mensaje de inicio de sniffing
+- proceso activo (no termina solo)
+
+## Paso 5: verificar poisoning/redirección (`T2`)
+
+```bash
+# T2
+ATK="$(docker inspect -f '{{range .NetworkSettings.Networks}}{{.MacAddress}}{{end}}' poison)"
+for i in $(seq 1 20); do
+	docker exec user sh -c "ping -c1 -W1 ftp_server >/dev/null 2>&1 || true"
+	docker exec ftp_server sh -c "ping -c1 -W1 user >/dev/null 2>&1 || true"
+	if docker exec user cat /proc/net/arp | grep -qi "$ATK" && docker exec ftp_server cat /proc/net/arp | grep -qi "$ATK"; then
+		break
+	fi
+	sleep 1
+done
+
+docker exec user cat /proc/net/arp
+docker exec ftp_server cat /proc/net/arp
+```
+
+Esperado:
+- entradas ARP cruzadas apuntando temporalmente a la MAC del atacante
+
+## Paso 6: prueba FTP STOR/RETR (`T2`)
+
+```bash
+# T2
+docker exec user sh -c "set -e; echo 'hola evaluacion' > /tmp/prueba_subida.txt; lftp -u ftpuser,ftppass ftp_server -e 'set xfer:clobber true; put /tmp/prueba_subida.txt -o prueba_subida.txt; get prueba_subida.txt -o /tmp/prueba_bajada.txt; bye'; ls -l /tmp/prueba_bajada.txt; head -n 1 /tmp/prueba_bajada.txt"
+```
+
+Si aparece `553 Could not create file` o `550 Failed to open file`, ejecuta este comando **una sola vez** en `T2` y repite el paso 6:
+
+```bash
+# T2
+docker exec ftp_server sh -c 'mkdir -p /home/vsftpd/ftpuser /srv && chmod 777 /home/vsftpd /home/vsftpd/ftpuser /srv'
+```
+
+Si el paso 6 ya funciona (sube y baja el archivo), **no hace falta ejecutar** este comando.
+
+Esperado en `T1`:
+- `[FTP][UPLOAD] prueba_subida.txt`
+- `[FTP][DOWNLOAD] prueba_subida.txt`
+
+Si no aparece salida `[FTP]` en `T1`:
+
+1. Para el proceso (`Ctrl+C`) y recalcula IP/MAC (Paso 2) en la misma terminal de `T1`.
+2. Relanza con `python3 -u` (Paso 4).
+3. Verifica poisoning antes del FTP (Paso 5):
+
+```bash
+# T2
+docker exec user cat /proc/net/arp
+docker exec ftp_server cat /proc/net/arp
+```
+
+Debe verse la MAC del atacante (`ATK_MAC`) asociada temporalmente durante el ataque.
+
+## Paso 7: restauración ARP (`T1` + `T2`)
+
+En `T1`: `Ctrl+C`
+
+En `T2`:
+
+```bash
+# T2
+docker exec user cat /proc/net/arp
+docker exec ftp_server cat /proc/net/arp
+```
+
+Esperado:
+- mensaje de restauración en `T1`
+- ARP normalizado en ambos nodos
+
+
+Parar desde T2 docker stop poison
+
+

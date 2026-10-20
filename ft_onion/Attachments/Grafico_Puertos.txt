@@ -1,0 +1,38 @@
+MINI GRAFICO - HOST / CONTAINER / TOR
+
+                 (MI MAQUINA / HOST 42)
+        ┌───────────────────────────────────────┐
+        │  curl http://127.0.0.1:8080          │
+        │  ssh  -p 2222 evaluator@127.0.0.1    │
+        └───────────────────────────────────────┘
+                    │                │
+                    │ 8080:80        │ 2222:4242
+                    ▼                ▼
+         ┌──────────────────────────────────────────┐
+         │          CONTAINER ft_onion              │
+         │                                          │
+         │  Nginx escucha en :80                    │
+         │  SSHD  escucha en :4242                  │
+         │  Tor daemon (hidden service)             │
+         └──────────────────────────────────────────┘
+                      │                │
+                      │ torrc          │ torrc
+                      │ HSPort 80      │ HSPort 4242
+                      ▼                ▼
+               127.0.0.1:80      127.0.0.1:4242
+                    (Nginx)           (SSH)
+
+                     RED TOR (externa)
+                           │
+                           ▼
+               http://mi_direccion.onion
+                 ├─ puerto 80   -> web
+                 └─ puerto 4242 -> ssh
+
+REGLA RAPIDA:
+- 8080:80    = host 8080 -> container 80
+- 2222:4242  = host 2222 -> container 4242
+- Tor SIEMPRE redirige a 127.0.0.1:80 y 127.0.0.1:4242 dentro del container.
+
+EVALUACION:
+"Host usa 8080/2222 solo para pruebas locales; Tor publica 80/4242 del servicio interno, que es lo que exige el subject."

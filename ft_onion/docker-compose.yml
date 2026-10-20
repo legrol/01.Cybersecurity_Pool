@@ -1,0 +1,14 @@
+services:
+  ft_onion:
+    build: .
+    ports:
+      - "8080:80"      # Acceso externo 8080 mapea a interno 80 (Nginx)
+      - "2222:4242"    # Acceso externo 2222 mapea a interno 4242 (SSH)
+    volumes:
+      - tor_data:/var/lib/tor/onion_web_service
+    environment:
+      - TZ=UTC
+    restart: unless-stopped
+
+volumes:
+  tor_data:

@@ -1,0 +1,29 @@
+# INSTRUCCIONES DE EVALUACIÓN (COPIA Y PEGA EN TERMINAL)
+# -------------------------------------------------------------
+# Abre dos terminales. En la primera, arranca el servidor.
+# En la segunda, ejecuta el resto de comandos uno a uno.
+
+# 1. EN LA PRIMERA TERMINAL (Arrancar servidor víctima):
+python3 dummy_server.py
+# Si 8080 está ocupado, arrancará automáticamente en 8081.
+# Usa la URL que te imprima el servidor.
+
+# 2. EN LA SEGUNDA TERMINAL (Ejecutar las pruebas):
+# Prueba básica (Detecta db, extrae tabla e inyecta payloads):
+# Sustituye el puerto por el que te imprima el servidor.
+python3 vaccine.py http://127.0.0.1:8080/
+
+# Prueba de escritura (-o) a un log (se ejecutará en silencio y guardará el archivo):
+# Sustituye el puerto por el que te imprima el servidor.
+python3 vaccine.py -o evaluacion.log http://127.0.0.1:8080/
+
+# Ver el resultado del fichero para ver si funcionó:
+cat evaluacion.log
+
+# Prueba de ataque modificando verbo (-X) a POST:
+# Sustituye el puerto por el que te imprima el servidor.
+python3 vaccine.py -X POST http://127.0.0.1:8080/
+
+# Prueba final Bonus (Añadir Cookie simulada y UserAgent falsificado):
+# Sustituye el puerto por el que te imprima el servidor.
+python3 vaccine.py -u "AgentPiscine42/Evaluacion" -c "session=admin_123" http://127.0.0.1:8080/

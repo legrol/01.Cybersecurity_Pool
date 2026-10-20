@@ -1,0 +1,124 @@
+═══════════════════════════════════════════════════════════════════════════════
+FT_ONION - CHULETA COMPACTA (MEMORIZAR)
+═══════════════════════════════════════════════════════════════════════════════
+
+GUION INICIAL (30 SEGUNDOS)
+─────────────────────────────────────────────────────────────────────────────
+
+"Publico una página web estática en Tor con un hidden service.
+
+Nginx sirve puerto 80, SSH puerto 4242, Tor expone el .onion.
+
+Cumplo exactamente el subject: página estática, Nginx obligatorio,
+HTTP 80, SSH 4242, sin extras, sin firewall, sin puertos adicionales."
+
+
+DEMO RÁPIDA (3 MINUTOS)
+─────────────────────────────────────────────────────────────────────────────
+
+DOCKER:
+  docker ps | grep ft_onion
+  curl http://127.0.0.1:8080
+  docker exec <id> ss -ltnp | grep 4242
+  docker-compose logs | grep onion
+
+SISTEMA LOCAL:
+  sudo nginx -t
+  curl http://127.0.0.1:80
+  sudo ss -ltnp | grep 4242
+  sudo cat /var/lib/tor/onion_web_service/hostname
+
+RESPUESTA ESPERADA: Error 200 para curl, sshd en 4242, .onion obtenido.
+
+
+TOR BROWSER (2 MINUTOS)
+─────────────────────────────────────────────────────────────────────────────
+
+1. Abre Tor Browser
+2. Navega a: http://<tu_onion>
+3. Ves "Servidor Onion Activo"
+
+
+PREGUNTAS FRECUENTES
+─────────────────────────────────────────────────────────────────────────────
+
+P: ¿Quién sirve la página?
+R: Nginx. Tor solo publica .onion.
+
+P: ¿Dónde está SSH?
+R: Puerto 4242, publicado por Tor en el .onion.
+
+P: ¿Abriste puertos?
+R: No. Subject pide no hacerlo.
+
+P: ¿Backend o framework?
+R: No. Solo HTML estático.
+
+P: ¿Por qué Docker?
+R: No tengo sudo en 42. Docker internamente sigue usando 80 y 4242.
+
+
+CUMPLIMIENTO CHECKLIST
+─────────────────────────────────────────────────────────────────────────────
+
+✓ Página estática única         → index.html
+✓ Nginx servidor web            → nginx.conf listen 80
+✓ SSH en puerto 4242            → sshd_config Port 4242
+✓ Hidden service Tor (.onion)   → torrc HiddenServicePort
+✓ Sin puertos extra             → Solo 80, 4242, .onion
+✓ Sin firewall                  → Nada configurado
+✓ Accesible Tor Browser         → .onion carga
+
+
+PUERTO MAPPING (Docker)
+─────────────────────────────────────────────────────────────────────────────
+
+8080  →  80   (Nginx)
+2222  →  4242 (SSH)
+
+Internamente: localhost:80 y localhost:4242 siempre ✓
+
+
+COMANDOS CLAVE
+─────────────────────────────────────────────────────────────────────────────
+
+DOCKER:
+  docker build -t ft_onion .
+  docker-compose up -d
+  docker ps
+  docker-compose logs
+  docker exec <id> bash
+
+SISTEMA LOCAL:
+  sudo systemctl restart nginx ssh tor
+  sudo systemctl status nginx --no-pager | grep Active
+  sudo ss -ltnp | grep 4242
+
+EN AMBOS:
+  curl http://127.0.0.1:80 (o :8080 Docker)
+
+
+CIERRE (20 SEGUNDOS)
+─────────────────────────────────────────────────────────────────────────────
+
+"Página estática: ✓
+Nginx en 80: ✓
+SSH en 4242: ✓
+Hidden service .onion: ✓
+Tor Browser acceso: ✓
+
+Solución mínima que cumple exactamente el subject."
+
+
+TIMING TOTAL
+─────────────────────────────────────────────────────────────────────────────
+
+Guion inicial:        30 segundos
+Demo local:          1-2 minutos
+.onion:              1 minuto
+Tor Browser carga:   2-3 minutos
+Responder preguntas: 1-2 minutos
+─────────────────────────────────────────────────────────────────────────────
+TOTAL:               5-10 minutos
+
+═══════════════════════════════════════════════════════════════════════════════

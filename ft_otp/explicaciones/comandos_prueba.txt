@@ -1,0 +1,36 @@
+# Comandos para probar ft_otp
+
+# SECUENCIA DE PRUEBA
+# Este archivo contiene todos los pasos para validar:
+# - Generacion y cifrado de clave con -g (HOTP RFC 4226)
+# - Generacion de OTP (6 digitos) con -k (TOTP RFC 6238, ventana 30s)
+# - Manejo de errores: archivo invalido, clave malformada, autenticacion fallida
+# - Cambio de OTP tras esperar 30 segundos (ventana temporal)
+
+# 1) Entrar al proyecto
+cd /Users/robi/Desktop/Bootcamp_Ciber_42/ft_otp
+
+# 2) Generar una clave hexadecimal valida (64 caracteres)
+python3 -c "print('0123456789abcdef' * 4)" > key.hex
+cat key.hex
+wc -c key.hex
+
+# 3) Probar caso invalido (debe fallar)
+echo "abc123" > key_invalida.hex
+python3 ft_otp.py -g key_invalida.hex
+
+# 4) Guardar clave valida en ft_otp.key cifrado 1234567890123456
+python3 ft_otp.py -g key.hex
+
+# 5) Generar OTP (debe mostrar 6 digitos)
+python3 ft_otp.py -k ft_otp.key
+
+# 6) Esperar y volver a generar OTP (normalmente cambia tras 30s)
+sleep 30
+python3 ft_otp.py -k ft_otp.key
+
+# 7) Verificar contra oathtool (si esta instalado)
+oathtool --totp "$(cat key.hex)"
+
+# 8) Limpiar archivos temporales opcionales
+rm -f key_invalida.hex

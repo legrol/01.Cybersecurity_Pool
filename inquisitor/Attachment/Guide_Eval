@@ -1,0 +1,55 @@
+# *************************************************************
+# T1
+# cd ~/Desktop/inquisitor
+
+make down && make up && make ps
+docker ps --format 'table {{.Names}}\t{{.Status}}\t{{.Ports}}'
+
+SRC="$(docker inspect -f '{{range .NetworkSettings.Networks}}{{.IPAddress}} {{.MacAddress}}{{end}}' ftp_server)"
+SRC_IP="$(echo "$SRC" | awk '{print $1}')"
+SRC_MAC="$(echo "$SRC" | awk '{print $2}')"
+
+TGT="$(docker inspect -f '{{range .NetworkSettings.Networks}}{{.IPAddress}} {{.MacAddress}}{{end}}' user)"
+TGT_IP="$(echo "$TGT" | awk '{print $1}')"
+TGT_MAC="$(echo "$TGT" | awk '{print $2}')"
+
+ATK="$(docker inspect -f '{{range .NetworkSettings.Networks}}{{.MacAddress}}{{end}}' poison)"
+
+echo "SRC_IP=$SRC_IP SRC_MAC=$SRC_MAC"
+echo "TGT_IP=$TGT_IP TGT_MAC=$TGT_MAC"
+echo "ATK_MAC=$ATK"
+
+docker exec poison python3 -m py_compile /usr/src/inquisitor.py
+docker exec -it poison python3 -u /usr/src/inquisitor.py "$SRC_IP" "$SRC_MAC" "$TGT_IP" "$TGT_MAC" -i eth0 -v
+
+# *************************************************************
+# T2
+ATK="$(docker inspect -f '{{range .NetworkSettings.Networks}}{{.MacAddress}}{{end}}' poison)"
+for i in $(seq 1 20); do
+	docker exec user sh -c "ping -c1 -W1 ftp_server >/dev/null 2>&1 || true"
+	docker exec ftp_server sh -c "ping -c1 -W1 user >/dev/null 2>&1 || true"
+	if docker exec user cat /proc/net/arp | grep -qi "$ATK" && docker exec ftp_server cat /proc/net/arp | grep -qi "$ATK"; then
+		break
+	fi
+	sleep 1
+done
+
+docker exec user cat /proc/net/arp
+docker exec ftp_server cat /proc/net/arp
+
+docker exec user sh -c "set -e; echo 'hola evaluacion' > /tmp/prueba_subida.txt; lftp -u ftpuser,ftppass ftp_server -e 'set xfer:clobber true; put /tmp/prueba_subida.txt -o prueba_subida.txt; get prueba_subida.txt -o /tmp/prueba_bajada.txt; bye'; ls -l /tmp/prueba_bajada.txt; head -n 1 /tmp/prueba_bajada.txt"
+
+# *************************************************************
+# T2 (solo si sale 553/550)
+docker exec ftp_server sh -c 'mkdir -p /home/vsftpd/ftpuser /srv && chmod 777 /home/vsftpd /home/vsftpd/ftpuser /srv'
+
+# *************************************************************
+# T2 (tras Ctrl+C en T1)
+docker exec poison pkill -2 -f '/usr/src/inquisitor.py' || true; sleep 1; docker exec user sh -c "ping -c1 -W1 ftp_server >/dev/null 2>&1 || true"; docker exec ftp_server sh -c "ping -c1 -W1 user >/dev/null 2>&1 || true"; docker exec user cat /proc/net/arp; docker exec ftp_server cat /proc/net/arp
+
+
+
+
+
+==========================
+docker stop poison

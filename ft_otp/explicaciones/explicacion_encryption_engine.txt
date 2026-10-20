@@ -1,0 +1,142 @@
+EXPLICACION DE encryption_engine.py (FUNCION POR FUNCION)
+
+NUCLEO DEL MODULO (soporte para ft_otp):
+- **Objetivo**: Cifrar/descifrar con librería estándar (sin pycriptodome, sin AES).
+- **Seguridad**: Confidencialidad (contenido no legible) + Integridad (detección de cambios).
+- **Algoritmos usados**:
+  - PBKDF2-HMAC-SHA256: Derivación de claves desde contraseña (1M iteraciones).
+  - HMAC-SHA256: Generación de keystream y autenticación (tag de 32 bytes).
+  - XOR simétrico: Cifrado/descifrado (mismo keystream).
+- **Formato de archivo**: MAGIC (6 bytes) + SALT (16) + NONCE (16) + CIPHERTEXT (var) + TAG (32).
+- **Gestion de errores**: Fallo de autenticación → "Incorrect password." + exit(1).
+
+Clase: EncryptionEngine
+Responsabilidad general:
+- Cifrar y descifrar con libreria estandar de Python, sin dependencias externas.
+- Incluye confidencialidad (contenido no legible) e integridad (deteccion de cambios).
+
+Constantes importantes:
+- MAGIC: firma del formato de fichero (FTOTP1 = 6 bytes para validacion).
+- SALT_SIZE: tamano de sal aleatoria (16 bytes, para PBKDF2).
+- NONCE_SIZE: tamano de nonce aleatorio (16 bytes, para keystream inicial).
+- TAG_SIZE: tamano de etiqueta HMAC (32 bytes = 256 bits SHA256).
+- PBKDF2_ROUNDS: iteraciones de derivacion de clave (default 1M para resistencia).
+
+
+1) __init__(self)
+Que hace:
+- Constructor de la clase.
+
+Detalle:
+- En esta version no necesita inicializar estado adicional.
+
+Resumen:
+- Punto de entrada para instanciar el motor.
+
+
+2) _get_password(self, prompt)
+Que hace:
+- Solicita la contrasena al usuario y la devuelve en bytes.
+
+Comportamiento:
+- En terminal interactiva usa getpass (entrada oculta).
+- Si hay pipe/redireccion usa input.
+
+Resumen:
+- Permite usar el programa tanto a mano como con scripts.
+
+
+3) _derive_keys(self, password, salt)
+Que hace:
+- Deriva dos claves independientes desde la contrasena.
+
+Como lo hace:
+- Usa PBKDF2-HMAC-SHA256.
+- Genera 64 bytes totales:
+	- 32 bytes para cifrado (enc_key).
+	- 32 bytes para autenticacion (mac_key).
+
+Resumen:
+- Separa clave de cifrado y clave de integridad para mayor seguridad.
+
+
+4) _keystream_xor(self, data, enc_key, nonce)
+Que hace:
+- Cifra o descifra datos con XOR contra un keystream generado por HMAC.
+
+Como funciona:
+- Genera bloques HMAC(enc_key, nonce || contador).
+- Concatena bloques hasta cubrir el tamano de data.
+- Aplica XOR byte a byte.
+
+Resumen:
+- Es simetrico: la misma funcion sirve para cifrar y descifrar.
+
+
+5) encrypt_data(self, plaintext_data)
+Que hace:
+- Cifra texto y devuelve un payload autenticado en bytes.
+
+Paso a paso:
+- Pide password y valida 16 caracteres.
+- Genera salt y nonce aleatorios.
+- Deriva enc_key y mac_key.
+- Cifra plaintext con _keystream_xor().
+- Construye payload: MAGIC + salt + nonce + ciphertext.
+- Calcula tag HMAC-SHA256 sobre payload.
+- Devuelve payload + tag.
+
+Resumen:
+- Produce un bloque binario listo para guardar de forma segura.
+
+
+6) decrypt_data(self, encrypted_data)
+Que hace:
+- Verifica integridad y descifra un payload.
+
+Paso a paso:
+- Pide password y valida longitud.
+- Comprueba formato minimo y cabecera MAGIC.
+- Extrae salt, nonce, ciphertext y tag.
+- Recalcula tag y compara con hmac.compare_digest().
+- Si coincide, descifra con _keystream_xor().
+- Devuelve texto utf-8.
+
+Errores:
+- Si falla formato, password o integridad: "Incorrect password." y exit(1).
+
+Resumen:
+- Garantiza que solo se lea contenido valido y autentico.
+
+
+7) encrypt_file(self, filepath)
+Que hace:
+- Lee un archivo en texto, lo cifra y lo sobreescribe en binario.
+
+Que devuelve:
+- Bytes cifrados.
+
+Resumen:
+- Convierte un fichero en claro en fichero protegido.
+
+
+8) decrypt_file(self, filepath)
+Que hace:
+- Lee un archivo cifrado, lo descifra y lo sobreescribe en texto.
+
+Que devuelve:
+- String descifrado.
+
+Resumen:
+- Revierte el archivo cifrado a su contenido legible.
+
+
+9) read_encrypted_file(self, filepath)
+Que hace:
+- Lee y descifra sin reescribir el archivo.
+
+Que devuelve:
+- String descifrado.
+
+Resumen:
+- Util para usar la clave en memoria sin alterar el fichero.

@@ -1,0 +1,152 @@
+EXPLICACION DE ft_otp.py (FUNCION POR FUNCION)
+
+NUCLEO DEL PROYECTO (alineado con rubric):
+- **HOTP (RFC 4226)**: Algoritmo base con HMAC-SHA1, truncamiento dinamico, 6 digitos.
+  - Entrada: secret_key (hex), counter (entero)
+  - Salida: 6-digit OTP (000000-999999)
+  - Implementacion: function generate_hotp_from_counter()
+  
+- **TOTP (RFC 6238)**: HOTP aplicado a ventana temporal de 30 segundos.
+  - Entrada: secret_key (hex)
+  - Calculo: time_counter = floor(time.time() / 30)
+  - Salida: 6-digit OTP usando generate_hotp_from_counter(secret_key, time_counter)
+  - Implementacion: function generate_totp_password()
+  
+- **Banderas (al menos 2, segun rubric)**:
+  - `-g FILE`: generar, validar y cifrar clave → ft_otp.key
+  - `-k FILE`: descifrar y generar OTP
+  - **Excluyencia**: argparse enforza una sola bandera por ejecucion
+  
+- **Gestion de excepciones**: Todas las excepciones terminan con exit(1).
+  - Archivos invalidos → exit(1)
+  - Formato incorrecto → exit(1) 
+  - Fallo descifrado → exit(1)
+
+
+DIFERENCIA CLAVE ENTRE HOTP Y TOTP:
+- HOTP usa un contador manual/monotono (0,1,2,3...).
+- TOTP usa tiempo, pero internamente hace HOTP.
+- Formula conceptual:
+  - HOTP = HMAC(secret, counter)
+  - TOTP = HOTP(secret, floor(timestamp / 30))
+- En este proyecto:
+  - La funcion base es generate_hotp_from_counter().
+  - generate_totp_password() solo calcula el contador temporal y llama a HOTP.
+
+
+1) parse_command_line_arguments()
+Que hace:
+- Define y procesa los argumentos de la linea de comandos.
+
+Opciones:
+- -g FILE: guarda una clave hexadecimal en ft_otp.key cifrado.
+- -k FILE: genera una OTP temporal desde un fichero cifrado.
+
+Detalles tecnicos:
+- Usa argparse.add_mutually_exclusive_group(required=True).
+- Esto fuerza una y solo una bandera por ejecucion.
+- Sin banderas, argparse muestra error automaticamente.
+
+Que devuelve:
+- Una tupla: (g, k).
+
+Resumen:
+- Decide el modo de ejecucion del programa.
+
+
+2) validate_key_file(filepath)
+Que hace:
+- Verifica que el archivo de clave exista, sea legible y tenga formato valido.
+
+Validaciones:
+- El archivo debe existir y tener permisos de lectura.
+- El contenido debe cumplir regex: ^[0-9a-fA-F]{64,}$
+  - Solo caracteres hexadecimales.
+  - Minimo 64 caracteres.
+
+Que devuelve:
+- (True, key_data) si la clave es valida.
+- (False, None) si falla una validacion.
+
+Resumen:
+- Evita guardar claves invalidas.
+
+
+3) is_valid_hex_key(key_data)
+Que hace:
+- Comprueba si una clave en memoria sigue el formato hexadecimal valido (minimo 64).
+
+Que devuelve:
+- True o False.
+
+Resumen:
+- Se usa tras descifrar para evitar operar con claves corruptas.
+
+
+4) generate_hotp_from_counter(secret_key, counter)
+Que hace:
+- Implementa HOTP (RFC 4226) y devuelve 6 digitos.
+
+Paso a paso:
+- 1) Convierte la clave secreta (hex) a bytes.
+- 2) Convierte el contador a 8 bytes en big-endian (formato RFC 4226).
+- 3) Calcula HMAC-SHA1 usando (secret, counter_bytes).
+- 4) Toma un offset con el ultimo nibble del hash.
+- 5) Extrae 4 bytes desde ese offset (dynamic truncation).
+- 6) Fuerza entero positivo con mascara 0x7fffffff.
+- 7) Hace modulo 1_000_000 para obtener 6 digitos.
+- 8) Formatea con ceros a la izquierda (ej: 000123).
+
+Ejemplo mental rapido:
+- Si counter=100 y counter=101, HOTP cambia aunque el tiempo no cambie.
+- HOTP depende del contador, no del reloj.
+
+Resumen:
+- Es el nucleo criptografico de la OTP.
+
+
+5) generate_totp_password(secret_key)
+Que hace:
+- Genera TOTP usando HOTP como base.
+
+Paso a paso:
+- Calcula el contador temporal: floor(time.time() / 30).
+- Llama a generate_hotp_from_counter() con ese contador.
+
+Idea clave:
+- No "reinventa" OTP: reutiliza HOTP.
+- Por eso TOTP cambia cada 30s: cambia su contador temporal.
+
+Que devuelve:
+- Un string de 6 digitos.
+
+Resumen:
+- Implementa el nucleo de la OTP temporal.
+
+
+6) main()
+Que hace:
+- Coordina todo el flujo segun los argumentos.
+
+Flujos:
+- Modo -g:
+  - Valida el archivo con validate_key_file().
+  - Guarda la clave en ft_otp.key.
+  - Cifra ft_otp.key con EncryptionEngine.encrypt_file().
+
+- Modo -k:
+  - Verifica que el fichero existe y es legible.
+  - Descifra la clave con EncryptionEngine.read_encrypted_file().
+  - Valida formato con is_valid_hex_key().
+  - Genera OTP con generate_totp_password() e imprime.
+
+Resumen:
+- Es el controlador principal del programa.
+
+
+7) if __name__ == "__main__":
+Que hace:
+- Ejecuta main() solo cuando se lanza el archivo directamente.
+
+Resumen:
+- Permite importarlo sin ejecutar el programa automaticamente.

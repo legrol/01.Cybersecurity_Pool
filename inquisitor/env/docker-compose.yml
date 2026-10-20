@@ -1,0 +1,50 @@
+services:
+ 
+    ftp_server:
+        container_name: ftp_server
+        image: panubo/vsftpd:v1.0.0
+        ports:
+            - "${FTP_PORT:-12121}:21"
+        environment:
+            - FTP_USER=ftpuser
+            - FTP_PASSWORD=ftppass
+        volumes:
+            - ./ftp_server/vsftpd:/home/vsftpd
+            - ./ftp_server/log:/var/log/vsftpd
+            - ./ftp_server/server:/srv
+        networks:
+            - inquisitor_network
+    
+    user:
+        container_name: user
+        build:
+            context: .
+            dockerfile: user.Dockerfile
+        image: user.inquisitor
+        volumes:
+            - ./home:/home:rw
+        ports:
+            - "${USER_SSH_PORT:-14141}:4141"
+        networks:
+            - inquisitor_network
+
+    poison:
+        container_name: poison
+        build:
+            context: .
+            dockerfile: poison.Dockerfile
+        image: poison.inquisitor
+        cap_add:
+            - NET_RAW
+            - NET_ADMIN
+        sysctls:
+            - net.ipv4.ip_forward=1
+        volumes:
+            - ../:/usr/src
+        ports:
+            - "${POISON_SSH_PORT:-2222}:4242"
+        networks:
+            - inquisitor_network
+
+networks:
+    inquisitor_network:

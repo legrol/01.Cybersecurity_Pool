@@ -1,0 +1,39 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="420" viewBox="0 0 1200 420" role="img" aria-labelledby="title desc">
+  <title id="title">Cybersecurity Pool</title>
+  <desc id="desc">Ilustración tecnológica en tonos azul oscuro y cian con un escudo central conectado a una red.</desc>
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#071426"/>
+      <stop offset="1" stop-color="#102b49"/>
+    </linearGradient>
+    <linearGradient id="shield" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#29d9ff"/>
+      <stop offset="1" stop-color="#5a7cff"/>
+    </linearGradient>
+    <filter id="glow" x="-50%" y="-50%" width="200%" height="200%">
+      <feGaussianBlur stdDeviation="7" result="blur"/>
+      <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+  </defs>
+  <rect width="1200" height="420" rx="28" fill="url(#bg)"/>
+  <g fill="none" stroke="#1e5578" stroke-width="2" opacity=".75">
+    <path d="M0 82h185l38 38h105M0 340h150l46-46h132M1200 75h-175l-44 44H860M1200 345h-190l-44-44h-95"/>
+    <path d="M84 0v54l44 44M1115 0v62l-45 45M67 420v-61l48-48M1132 420v-63l-44-44"/>
+    <path d="M0 211h118M1082 210h118"/>
+  </g>
+  <g fill="#35d8ff" opacity=".9">
+    <circle cx="185" cy="82" r="5"/><circle cx="328" cy="120" r="5"/>
+    <circle cx="150" cy="340" r="5"/><circle cx="328" cy="294" r="5"/>
+    <circle cx="1025" cy="75" r="5"/><circle cx="860" cy="119" r="5"/>
+    <circle cx="1010" cy="345" r="5"/><circle cx="871" cy="301" r="5"/>
+  </g>
+  <g transform="translate(600 207)" filter="url(#glow)">
+    <path d="M0-118 94-83v72c0 69-39 111-94 144C-55 100-94 58-94-11v-72z" fill="url(#shield)" opacity=".96"/>
+    <path d="M0-91 70-65v53c0 51-26 83-70 112-44-29-70-61-70-112v-53z" fill="#0b1e35"/>
+    <path d="m-34 3 23 23 48-55" fill="none" stroke="#55e7ff" stroke-width="12" stroke-linecap="round" stroke-linejoin="round"/>
+  </g>
+  <g font-family="Inter,Segoe UI,Arial,sans-serif" text-anchor="middle">
+    <text x="600" y="365" fill="#eaf7ff" font-size="37" font-weight="700" letter-spacing="5">CYBERSECURITY POOL</text>
+    <text x="600" y="397" fill="#82b8d7" font-size="15" letter-spacing="3">LEARN · ANALYZE · BUILD · DEFEND</text>
+  </g>
+</svg>

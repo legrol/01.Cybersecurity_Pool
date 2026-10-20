@@ -1,0 +1,224 @@
+================================================================================
+PROCEDIMIENTO DE PRUEBAS - FT_ONION (DOCKER)
+================================================================================
+
+OBJETIVO
+Validar que ft_onion cumple el subject sin necesidad de sudo en máquina 42.
+
+PRECONDICIONES
+- Docker instalado (sin necesidad de sudo).
+- docker-compose disponible.
+- Archivos en carpeta del proyecto:
+  * Dockerfile, docker-compose.yml
+  * index.html, nginx.conf, sshd_config, torrc
+
+================================================================================
+PARTE A - CONSTRUCCION DE IMAGEN
+================================================================================
+
+1) Construir imagen Docker
+Comando:
+  docker build -t ft_onion .
+
+Esperado:
+  - Proceso de ~1-2 minutos.
+  - Última línea: "Successfully tagged ft_onion:latest"
+  - Mensaje: "Built successfully"
+
+================================================================================
+PARTE B - DESPLIEGUE DE SERVICIOS
+================================================================================
+
+2) Levantar servicios con docker-compose
+Comando:
+  docker compose up -d
+
+Esperado:
+  - Salida indicando "done" o servicio iniciado.
+  - Sin errores de puerto ocupado.
+
+3) Verificar que container está corriendo
+Comando:
+  docker compose ps
+
+Esperado:
+  - Estado "running" para ft_onion.
+  - Puertos correctos: 8080->80 y 2222->4242.
+
+================================================================================
+PARTE C - VALIDACION LOCAL (SIN TOR)
+================================================================================
+
+4) Probar web accesible en puerto local 8080
+Comando:
+  curl -I http://127.0.0.1:8080
+
+Esperado:
+  - Respuesta: "HTTP/1.1 200 OK"
+
+5) Ver contenido de la página
+Comando:
+  curl http://127.0.0.1:8080 | head -20
+
+Esperado:
+  - Ves HTML con "Servidor Onion Activo" (o "Active Onion Server").
+
+6) Probar conexión SSH en puerto local 2222
+Comando:
+  ssh -p 2222 evaluator@127.0.0.1
+
+Credencial:
+  - Usuario: evaluator
+  - Contraseña: evaluator42
+
+Esperado:
+  - Conectas al shell del container.
+  - Escribes "exit" para salir.
+
+================================================================================
+PARTE D - OBTENER IDENTIFICADOR ONION
+================================================================================
+
+7) Opción 1: Ver logs del container
+Comando:
+  docker compose logs | grep -i onion
+
+Esperado:
+  - Línea con tu dirección .onion (ej: xxxxx.onion)
+
+O bien:
+
+7) Opción 2: Acceder directamente al archivo hostname
+Comandos:
+  docker ps
+  docker exec -it <CONTAINER_ID> cat /var/lib/tor/onion_web_service/hostname
+
+Esperado:
+  - Dirección tipo: xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx.onion
+
+NOTA: Guarda esta dirección para el siguiente paso.
+
+================================================================================
+PARTE E - VALIDACION CON TOR BROWSER
+================================================================================
+
+8) Abrir Tor Browser en tu máquina
+Acción:
+  - Descargar si no tienes: https://www.torproject.org/
+  - Ejecutar Tor Browser
+  - Esperar a que conecte ("Connected" en verde)
+
+9) Navegar a tu hidden service
+Acción:
+  - Barra de direcciones: http://<tu_onion_address>
+  - Presiona Enter
+
+Esperado:
+  - Carga la página "Servidor Onion Activo" (o equivalente personalizDo).
+  - Ves tu nick o nombre en verde si fue personalizado.
+  - Sin errores de conectividad.
+
+================================================================================
+PARTE F - VALIDACION SSH POR ONION (OPCIONAL)
+================================================================================
+
+10) Conectar SSH a través de Tor (si tienes torsocks)
+Comando:
+  torsocks ssh -p 4242 evaluator@<tu_onion_address>
+
+Contraseña: evaluator42
+
+Esperado:
+  - Acceso al shell del container (opcional para defensa).
+  - Si no tienes torsocks: válido indicar que puerto 4242 está publicado en torrc.
+
+================================================================================
+CRITERIOS DE EXITO FINAL
+================================================================================
+
+✓ Imagen Docker construye sin errores.
+✓ Container levanta con docker compose up -d.
+✓ Nginx responde en 127.0.0.1:8080 (HTTP 200).
+✓ SSH accesible en puerto 2222 (user: evaluator, pass: evaluator42).
+✓ Dirección .onion obtenida y estable.
+✓ Página visible en Tor Browser a través de .onion.
+✓ Solo Nginx (sin Apache, lighttpd, etc.).
+✓ Puertos internos correctos: 80 (Nginx), 4242 (SSH).
+
+================================================================================
+GUIA DE DIAGNOSTICO RAPIDO
+================================================================================
+
+PROBLEMA: Container no inicia o falla construcción
+Verificación:
+  docker compose logs
+  docker build -t ft_onion . (revisar output completo)
+Solución:
+  - Espacio disco bajo → docker system prune -a -f
+  - Puerto en uso → docker compose down (limpiar antes de rebuild)
+
+PROBLEMA: curl http://127.0.0.1:8080 falla
+Verificación:
+  docker ps (¿container en estado "Up"?)
+  docker compose logs | grep nginx
+Solución:
+  - Reintentar: docker compose restart
+  - Revisar nginx.conf tiene listen 80
+
+PROBLEMA: SSH rechaza conexión
+Verificación:
+  docker compose logs | grep ssh
+  docker ps (puertos 2222->4242 mapeados?)
+Solución:
+  - Verificar credencial: evaluator / evaluator42
+  - Sintaxis exacta: ssh -p 2222 evaluator@127.0.0.1
+
+PROBLEMA: Tor Browser no carga .onion
+Verificación:
+  docker compose logs | grep -i "hidden service"
+  ¿Tor Browser está conectado? (debería verse verde)
+Solución:
+  - Esperar 60-90 segundos a que Tor publique el servicio.
+  - Desconectar/reconectar Tor Browser.
+  - Revisar firewall/VPN bloqueando Tor.
+
+PROBLEMA: Dirección .onion no aparece en logs
+Verificación:
+  docker ps
+  docker exec <ID> ls -la /var/lib/tor/onion_web_service/
+  docker exec <ID> cat /var/lib/tor/onion_web_service/hostname
+Solución:
+  - Tor tardó en generar: espera 30-60 segundos y reintenta.
+  - Revisar permisos: /var/lib/tor/ debe ser propiedad de tor.
+
+================================================================================
+GUION RAPIDO PARA DEFENSA (60 SEGUNDOS MIN)
+================================================================================
+
+"El proyecto publica una página estática en la red Tor usando Docker.
+
+Paso 1: Construir imagen
+  $ docker build -t ft_onion .
+
+Paso 2: Levantar servicios
+  $ docker compose up -d
+
+Paso 3: Validar web local
+  $ curl -I http://127.0.0.1:8080
+  → HTTP 200 OK
+
+Paso 4: Obtener .onion
+  $ docker compose logs | grep onion
+  → g23b4...onion
+
+Paso 5: Verificar en Tor Browser
+  - Abro Tor Browser
+  - Navego a http://g23b4...onion
+  → Página visible
+
+SSH en puerto 4242 (interno) publicado por Tor.
+Todo funciona sin sudo gracias a Docker."
+
+================================================================================
+Fin del procedimiento.
+================================================================================

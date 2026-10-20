@@ -1,0 +1,81 @@
+LIMPIEZA SSH (host key) Y PUERTO 8080
+=====================================
+
+Contexto
+--------
+- Úsalo cuando:
+  1) SSH muestra "REMOTE HOST IDENTIFICATION HAS CHANGED" al conectar a 127.0.0.1:2222.
+  2) Docker Compose falla con "Bind for 127.0.0.1:8080 failed: port is already allocated".
+
+
+1) Limpiar error de SSH host key (127.0.0.1:2222)
+-----------------------------------------------
+Eliminar claves viejas guardadas:
+
+ssh-keygen -f "$HOME/.ssh/known_hosts" -R "[127.0.0.1]:2222"
+
+Agregar la clave actual del contenedor:
+
+ssh-keyscan -p 2222 127.0.0.1 >> "$HOME/.ssh/known_hosts" 2>/dev/null
+
+Probar conexión:
+
+ssh -p 2222 evaluator@127.0.0.1
+# pass: evaluator42
+
+Si quieres aceptar clave nueva automáticamente en una sola conexión:
+
+ssh -o StrictHostKeyChecking=accept-new -p 2222 evaluator@127.0.0.1
+
+
+2) Liberar puerto 8080 ocupado
+------------------------------
+Ver quién usa el 8080:
+
+docker ps --format 'table {{.ID}}\t{{.Names}}\t{{.Ports}}'
+ss -ltnp | grep ':8080' || true
+
+Si el que ocupa el puerto es un contenedor Docker, pararlo y borrarlo:
+
+docker stop <ID_O_NOMBRE>
+docker rm <ID_O_NOMBRE>
+
+Levantar tu proyecto actual:
+
+docker compose up -d
+docker compose ps
+
+
+3) Limpieza rápida del proyecto actual (opcional)
+-------------------------------------------------
+Bajar stack y liberar puertos de este compose:
+
+docker compose down --remove-orphans
+
+Volver a levantar:
+
+docker compose up -d --build
+
+
+4) Verificación final
+---------------------
+HTTP:
+
+curl -I http://127.0.0.1:8080
+
+SSH escuchando:
+
+ss -ltn | grep ':2222' || true
+
+Logs onion:
+
+docker compose logs --tail=200 ft_onion | grep -i onion || true
+
+
+Comando "todo en uno" (limpia host key + reinicia compose)
+-----------------------------------------------------------
+ssh-keygen -f "$HOME/.ssh/known_hosts" -R "[127.0.0.1]:2222" && \
+ssh-keyscan -p 2222 127.0.0.1 >> "$HOME/.ssh/known_hosts" 2>/dev/null && \
+docker compose down --remove-orphans && \
+docker compose up -d --build && \
+docker compose ps

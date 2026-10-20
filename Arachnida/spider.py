@@ -5,10 +5,11 @@
 #                                                     +:+ +:+         +:+      #
 #    By: rdel-olm <rdel-olm@student.42malaga.com    +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
-#    Created: 2026/03/15 19:36:34 by rdel-olm          #+#    #+#              #
-#    Updated: 2026/03/18 23:51:02 by rdel-olm         ###   ########.fr        #
+#    Created: 2026/03/23 18:11:28 by rdel-olm          #+#    #+#              #
+#    Updated: 2026/03/23 18:11:37 by rdel-olm         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
+
 
 # Spider extracts images from a target website.
 #

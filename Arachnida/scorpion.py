@@ -5,10 +5,11 @@
 #                                                     +:+ +:+         +:+      #
 #    By: rdel-olm <rdel-olm@student.42malaga.com    +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
-#    Created: 2026/03/18 23:38:13 by rdel-olm          #+#    #+#              #
-#    Updated: 2026/03/18 23:51:04 by rdel-olm         ###   ########.fr        #
+#    Created: 2026/03/23 18:11:51 by rdel-olm          #+#    #+#              #
+#    Updated: 2026/03/23 20:15:16 by rdel-olm         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
+
 
 # Scorpion inspects one or more image files and prints their metadata.
 #
@@ -86,15 +87,15 @@ def inspect_files(paths):
         print("=" * 80)
         print(f"Inspecting: {path}")
 
-        if not os.path.exists(path):
-            print("Error: File does not exist")
-            continue
-
         if not is_supported(path):
             print(
                 "Error: Unsupported extension "
                 f"(allowed: {', '.join(SUPPORTED_EXTENSIONS)})"
             )
+            continue
+
+        if not os.path.exists(path):
+            print("Error: File does not exist")
             continue
 
         try:

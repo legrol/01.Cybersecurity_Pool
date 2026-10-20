@@ -1,0 +1,10 @@
+# Minimal Tor hidden service configuration for ft_onion
+
+# Hidden service directory where Tor writes hostname and private key
+HiddenServiceDir /var/lib/tor/onion_web_service/
+
+# Publish onion HTTP endpoint and redirect to local Nginx
+HiddenServicePort 80 127.0.0.1:80
+
+# Publish onion SSH endpoint and redirect to local SSH daemon
+HiddenServicePort 4242 127.0.0.1:4242

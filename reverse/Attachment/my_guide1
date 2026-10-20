@@ -1,0 +1,41 @@
+
+================================================================================
+level1 
+
+file binary/level1
+./binary/level1
+printf "prueba\n" | ./binary/level1
+strings binary/level1
+printf "__stack_check\n" | ./binary/level1
+objdump -d binary/level1 | grep -A 50 "<main>:"
+gdb ./binary/level1
+	(gdb) break main               # Parar en función main
+	(gdb) run                      # Ejecutar
+	(gdb) next                     # Siguiente línea
+	(gdb) step                     # Entrar en función
+	(gdb) print $eax               # Ver contenido de registro
+	(gdb) x/s $esp                 # Ver memoria como string
+	(gdb) continue                 # Continuar ejecución
+	(gdb) quit                     # Salir
+
+gcc -o level1_recreado level1/source.c
+printf "__stack_check\n" | ./level1_recreado
+printf "prueba\n" | ./level1_recreado
+
+printf "__stack_check\n" | ./binary/level1
+printf "__stack_check\n" | ./level1_recreado
+
+================================================================================
+level2
+
+./binary/level2
+strings binary/level2 | grep -E "(Please|Good|Nope|delabere)"
+printf "delabere\n" | ./binary/level2
+objdump -d binary/level2 | grep -A 100 "<main>:"
+printf "00101108097098101114101\n" | ./binary/level2
+
+gcc -o level2_recreado level2/source.c
+printf "00101108097098101114101\n" | ./level2_recreado
+printf "00\n" | ./level2_recreado
+printf "99101108097098101114101\n" | ./level2_recreado
+

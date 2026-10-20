@@ -1,0 +1,18 @@
+GUIA RAPIDA PARA DEFENSA
+
+Como estudiar con estos archivos (orden sugerido):
+1. README.md → resumen visual: qué hace, banderas, requisitos.
+2. explicacion_ft_otp.txt → detalles de HOTP/TOTP, flujo de banderas, gestion de errores.
+3. explicacion_encryption_engine.txt → cómo se protege la clave (PBKDF2+HMAC+XOR).
+4. Opcional: comandos_prueba.txt → ejecutar tests en vivo para demostrar.
+
+Puntos clave del rubric (verificar durante defensa):
+✓ HOTP (RFC 4226) → ver generate_hotp_from_counter() en ft_otp.py
+✓ Claves aleatorias → ver salt + nonce en encryption_engine.py
+✓ Banderas (-g -k) → ver parse_command_line_arguments()
+✓ Gestion de excepciones → ver try/except + exit(1) en main()
+
+Detalles tecnicos:
+- Sin .venv requerido, sin pip install.
+- Solo Python 3 stdlib (hashlib, hmac, struct, time, os, etc).
+- Encryption: PBKDF2-HMAC-SHA256 (key derivation) + HMAC-based XOR keystream.

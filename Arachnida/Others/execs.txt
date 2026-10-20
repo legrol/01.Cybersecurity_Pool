@@ -52,3 +52,17 @@ scorpion
             ls /Users/robi/Desktop/Bootcamp_Ciber_42/Arachnida/data_test | head
 
             python3 scorpion.py demo_images/python_logo.png demo_images/landscape.jpg
+
+    python3 [scorpion.py](http://_vscodecontentref_/16) -h
+    python3 scorpion.py -h
+
+=================================================
+spider
+
+    python3 spider.py -r -l 1 https://books.toscrape.com/catalogue/category/books/science_22/index.html
+
+scorpion
+
+    python3 scorpion.py demo_images/python_logo.png demo_images/landscape.jpg demo_images/Cluster_Malaga.jpg
+
+=================================================   

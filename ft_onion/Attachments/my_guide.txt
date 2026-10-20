@@ -1,0 +1,54 @@
+docker build -t ft_onion .
+
+docker compose up -d
+docker compose ps
+
+curl -I http://127.0.0.1:8080
+
+ssh -p 2222 evaluator@127.0.0.1 
+	pass: evaluator42
+	exit
+
+=======================================================
+
+
+esta 
+	docker compose logs | grep -i onion
+o esta 
+	docker ps
+	docker exec -it <ID_CONTENEDOR> cat /var/lib/tor/onion_web_service/hostname
+
+abrir tor browser
+	http://<mi_direccion_onion>
+	se ve Servidor Onion Activo
+
+
+
+de interes
+	docker compose down
+	docker compose up -d --build
+	docker ps
+
+
+	g23b4ozpmkp6swfyuatybobbhiswtpsablz2b3icyfnzpimvwydx6vid.onion
+
+
+
+===================================================
+limpiezas caches
+
+docker system prune -a --volumes -f
+
+rm -rf ~/.slack
+rm -rf ~/.config/Slack
+
+rm -rf ~/.cache/BraveSoftware
+rm -rf ~/.cache/google-chrome
+
+rm -rf ~/.cache/Code
+
+
+docker system prune -a -f && \
+rm -rf ~/.cache/* && \
+rm -rf ~/.local/share/Trash && \
+du -sh ~ 2>/dev/null | tail -1
