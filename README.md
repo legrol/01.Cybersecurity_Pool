@@ -1,34 +1,34 @@
 # Cybersecurity Pool
 
-![Ilustración de la Cybersecurity Pool](zz_Others/cybersecurity-pool.svg)
+![Cybersecurity Pool illustration](zz_Others/cybersecurity-pool.svg)
 
-Colección de proyectos prácticos de ciberseguridad desarrollados en el bootcamp de 42. La pool reúne ejercicios de análisis, criptografía, redes y seguridad web, con documentación y material de evaluación para cada módulo.
+A collection of hands-on cybersecurity projects developed during the 42 bootcamp. The pool covers analysis, cryptography, networking, and web security, with documentation and evaluation material for each module.
 
-> **Uso responsable:** los proyectos son material educativo. Ejecuta las pruebas únicamente en sistemas propios, laboratorios locales o entornos para los que tengas autorización explícita. En particular, `inquisitor` y `vaccine` pueden generar tráfico de prueba y `stockholm` cifra archivos.
+> **Responsible use:** These projects are for educational purposes. Run tests only on systems you own, local labs, or environments where you have explicit authorization. In particular, `inquisitor` and `vaccine` can generate test traffic, and `stockholm` encrypts files.
 
-## Proyectos
+## Projects
 
-| Proyecto | Área | Qué encontrarás |
+| Project | Area | Overview |
 | --- | --- | --- |
-| [Arachnida](Arachnida/README.md) | Análisis web y metadatos | `spider.py` recopila imágenes de páginas web y `scorpion.py` inspecciona sus metadatos. |
-| [ft_otp](ft_otp/README.md) | Criptografía y autenticación | Generación de códigos OTP temporales a partir de una clave hexadecimal. |
-| [ft_onion](ft_onion/README.md) | Redes y privacidad | Servicio web oculto en Tor, con Nginx y acceso SSH en un entorno configurable. |
-| [Inquisitor](inquisitor/README.md) | Redes y análisis de tráfico | Laboratorio de ARP poisoning y observación de nombres de archivos en tráfico FTP. |
-| [Reverse](reverse/README.md) | Ingeniería inversa | Análisis de binarios y reconstrucción de la lógica de varios niveles. |
-| [Stockholm](stockholm/README.md) | Criptografía y malware | Simulación educativa de cifrado y recuperación de archivos en una carpeta de prueba. |
-| [Vaccine](vaccine/README.md) | Seguridad web | Pruebas de SQL injection, con servidor local de demostración incluido. |
+| [Arachnida](Arachnida/README.md) | Web analysis and metadata | `spider.py` downloads images from web pages; `scorpion.py` inspects image metadata. |
+| [ft_otp](ft_otp/README.md) | Cryptography and authentication | Generates time-based one-time passwords from a hexadecimal key. |
+| [ft_onion](ft_onion/README.md) | Networking and privacy | Hosts a Tor hidden service with Nginx and SSH in a configurable environment. |
+| [Inquisitor](inquisitor/README.md) | Networking and traffic analysis | A lab tool for ARP poisoning and observing filenames in FTP traffic. |
+| [Reverse](reverse/README.md) | Reverse engineering | Analyzes binaries and reconstructs the logic behind multiple levels. |
+| [Stockholm](stockholm/README.md) | Cryptography and malware | An educational file-encryption and recovery simulation scoped to a test folder. |
+| [Vaccine](vaccine/README.md) | Web security | Tests for SQL injection vulnerabilities and includes a local demo server. |
 
-## Cómo empezar
+## Getting started
 
-Cada proyecto tiene sus propios requisitos y pasos de ejecución. Entra en la carpeta que te interese y sigue su README; no hay una instalación única para toda la pool.
+Each project has its own requirements and setup instructions. Open the project directory and follow its README; there is no single installation process for the entire pool.
 
 ```bash
 cd Arachnida
 ```
 
-Varios proyectos incluyen guías adicionales, comandos de evaluación o laboratorios Docker. Consulta la documentación del módulo antes de ejecutar herramientas o preparar un entorno.
+Some projects include additional guides, evaluation commands, or Docker labs. Read the project documentation before running tools or setting up an environment.
 
-## Estructura
+## Repository structure
 
 ```text
 .
@@ -44,12 +44,12 @@ Varios proyectos incluyen guías adicionales, comandos de evaluación o laborato
 └── zz_Subject_Corrections/
 ```
 
-Las carpetas `zz_Subjects _Cyber` y `zz_Subject_Corrections` contienen subjects y correcciones de referencia.
+The `zz_Subjects _Cyber` and `zz_Subject_Corrections` directories contain project subjects and reference corrections.
 
-## Tecnologías y conceptos
+## Technologies and concepts
 
-Python · C · Linux · Docker · Tor · Nginx · SSH · OTP · análisis de tráfico · ingeniería inversa · seguridad web.
+Python · C · Linux · Docker · Tor · Nginx · SSH · OTP · traffic analysis · reverse engineering · web security.
 
 ---
 
-Proyecto personal de aprendizaje realizado en el contexto de la Cybersecurity Pool de 42.
+Personal learning projects completed as part of the 42 Cybersecurity Pool.
